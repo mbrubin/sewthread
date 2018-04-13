@@ -1,50 +1,78 @@
 class MovingThread{
     //initially draw the thread randomly close to the mouse coordinates
-    constructor(color, x, y){
-        //storing the two points in vectors
-        this.p1 = createVector(x + random(5,10), y + random(5, 10));
-        this.p2 = createVector(x - random(5, 10), y - random(5, 10));
-        this.color = color;
+    constructor(col, x_pos, y_pos, len){
+        this.col = col;
+        this.x_pos = x_pos
+        this.y_pos = y_pos;
+        this.len = len;
+        
+        this.angle = 0;
+        
+        //random movement constants
+        this.ANGULAR_SPEED = 10;
+        this.MOVEMENT_SPEED = 30;
+        this.COLOR_VARIATION = 10;
+        this.LENGTH_VARIATION = 15;
+        this.MIN_LENGTH = 100;
+        this.MAX_LENGTH = 750;
+        this.STROKE_WEIGHT = 0.15;
     }
 
-    get x1(){
-        return this.p1.xs;
+    //getters (are these all necessary???)
+    get x(){
+        return this.x_pos;
     }
-    get y1(){
-        return this.p1.y;
+    get y(){
+        return this.y_pos;
     }
-    get x2(){
-        return this.p2.x;
+    get length(){
+        return this.len;
     }
-    get y2(){
-        return this.p2.y;
+    get color(){
+        return this.col;
     }
-    set set_x1(x1_new){
-        this.p1.x = x1_new;
+    
+    //setters (are these all necessary???)
+    set_x(newX){
+        this.x_pos = newX;
     }
-    set set_y1(y1_new){
-        this.p1.y = y1_new;
+    set_y(newY){
+        this.y_pos = newY;
     }
-    set set_x2(x2_new){
-        this.p2.x = x2_new;
+    set_length(newLength){
+        this.len = newLength;
     }
-    set set_y2(y2_new){
-        this.p2.y = y2_new;
+    set_color(newColor){
+        this.col = newColor;
     }
 
-    //the thread draw function
+    //the thread drawing function
     sew(){
-        stroke(this.color);
+        //randomize some variables
+        /* USE NOISE HERE somehow to make cool random patterns/movements */
+        this.angle = (this.angle + random(-1*this.ANGULAR_SPEED, this.ANGULAR_SPEED)) % 360;
+        this.x_pos += random(-1*this.MOVEMENT_SPEED, this.MOVEMENT_SPEED);
+        this.y_pos += random(-1*this.MOVEMENT_SPEED, this.MOVEMENT_SPEED);
+        this.len += random(-20, 20);
+        if(this.len > this.MAX_LENGTH){
+            this.len = this.MAX_LENGTH;
+        }
+        else if(this.len < this.MIN_LENGTH){
+            this.len = this.MIN_LENGTH;
+        }
+        /* ALTER/RANDOMIZE COLOR TOO */
+        let r = red(this.color);
+        let g = blue(this.color);
+        let b = green(this.color);
+        this.col = color(r + random(-1*this.COLOR_VARIATION, this.COLOR_VARIATION), g + random(-1*this.COLOR_VARIATION, this.COLOR_VARIATION), b + random(-1*this.COLOR_VARIATION, this.COLOR_VARIATION));
         
-            line(this.p1.x  , this.p1.y, this.p2.x, this.p2.y);
-            // console.log('x1 = ' + this.p1.x);
-            // console.log('y1 = ' + this.p1.y);
-            // console.log('x2 = ' + this.p2.x);
-            // console.log('y2 = ' + this.p2.y);
-            this.p1.x += random(-3,3);
-            this.p1.y += random(-3,3);
-            this.p2.x += random(-3,3);
-            this.p2.x += random(-3,3);
-        
+        //update stroke color, origin point, and current rotation angle
+        stroke(this.col);
+        strokeWeight(this.STROKE_WEIGHT); /* CHANGE WEIGHT randomly??? */
+        translate(this.x_pos, this.y_pos);
+        rotate(this.angle);
+
+        //draw the line from the center point (x_pos, y_pos) extending out len/2 in both directions (following 'angle')
+        line(0-(cos(this.angle)*(this.len/2)), 0-(sin(this.angle)*(this.len/2)), cos(this.angle)*(this.len/2), sin(this.angle)*(this.len/2));
     }
 }
