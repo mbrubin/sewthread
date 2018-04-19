@@ -12,9 +12,9 @@ class MovingThread{
         this.ANGULAR_SPEED = 30;
         this.MOVEMENT_SPEED = 70;
         this.COLOR_VARIATION = 15;
-        this.LENGTH_VARIATION = 30;
-        this.MIN_LENGTH = 100;
-        this.MAX_LENGTH = 750;
+        this.LENGTH_VARIATION = 20;
+        this.MIN_LENGTH = 50;
+        this.MAX_LENGTH = 150;
         this.STROKE_WEIGHT = 0.3;//0.15;
         //this.STROKE_MAX = 0.5; *this ain't used yet*
         this.CRAWL_SPEED = 10;
@@ -99,6 +99,9 @@ class MovingThread{
 
         /* TO-DO (2): test out 3-D graphics stuff?!?!?!*/
         // maybe draw the lines in 3-D space, and have a way to rotate the camera around?
+
+        /* TO-DO (3): test out changing the background color dynamically too so it's not just always black */
+        // have it depend on the current color of this object???
     }
 
     //used for making the thread "crawl" towards the target coordinates (currently will be the mouse position)
