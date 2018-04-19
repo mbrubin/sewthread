@@ -6,4 +6,4 @@ I'm using the p5.js JavaScript library, referencing https://p5js.org/reference/.
 
 I'm also using TypeScript files to get "tooltips" for p5.js functions when working in Visual Studio Code.
 
-_If on Windows, you can run the Node.js local server by running 'runserver.bat'. If not already installed, you need to install Node.js and then run the command 'npm install -g browser-sync' before executing 'runserver.bat'._
+_Try it out_: [https://mbrubin.github.io/sewthread/](https://mbrubin.github.io/sewthread/)
