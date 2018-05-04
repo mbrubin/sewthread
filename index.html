@@ -5,6 +5,7 @@
     <!-- CURRENTLY UNUSED <script src="lib/p5.sound.js"></script> -->
     <script src="MovingThread.js"></script>
     <script src="VectorField.js"></script>
+    <script src="Particle.js"></script>
     <script src="sewthread.js"></script>
     <style>
       * {
@@ -32,14 +33,24 @@
     <div id="canvas-controls">
         <button id="clear-button">Clear!</button>
         <select id="draw-mode-picker">
-          <option value="haystack-mode">Haystack</option>
+          <option value="haystack-mode" selected>Haystack</option>
           <option value="flowy-mode">Flowy Flows</option>
         </select>
         <div id="haystack-controls">
-          <input id="loops-slider" type="range" min="1" max="100" value="1"/>
+          <input id="loops-slider" type="range" min="1" max="100" value="20"/>
           <p id="loops-p"></p>
+          <input id="haystack-size-slider" type="range" min="10" max="500" value="50"/>
+          <p id="haystack-size-p"></p>
           <p>Symmetry:</p>
           <input id="symmetry-checkbox" type="checkbox"/>
+          <p>[<i>TO-DO: sliders for "movement speed", "crawl speed", strokeWeight, color(?)</i>]</p>
+        </div>
+        <div id="flowy-controls">
+          <input id="flow-speed-slider" type="range" min="1" max="50" value="3"/>
+          <p id="flow-speed-p"></p>
+          <input id="num-particles-slider" type="range" min="10" max="1000" value="300" step="10"/>
+          <p id="num-particles-p"></p>
+          <p>[<i>TO-DO: sliders for color(?), strokeWeight(?), xoff/yoff/zoff change variation speeds???</i>]</p>
         </div>
     </div>
   </body>

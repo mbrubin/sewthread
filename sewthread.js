@@ -1,49 +1,84 @@
 //HELPFUL(?) NOTE: using Typescipt file for p5.js tooltips (with file here, ran command 'tsc .\p5.d.ts' after using 'npm install -g typescript') <-- [doesn't really seem to work... whatever :p]
 
-const canvasWidth = 1400;
-const canvasHeight = 800;
+const canvasWidth = 1000;
+const canvasHeight = 600;
 
 /* For checking whether a mouse click was in the canvas bounds */
-function inCanvas() {
+function mouseInCanvas() {
     return mouseX >= 0 && mouseX <= canvasWidth && mouseY >= 0 && mouseY <= canvasHeight;
 }
 
 // 'loops' is how many times per frame to call 'sew()' in draw() method
-let loops = 1;
+let loops;
 let loops_slider;
 let loops_display;
 let clear_button;
+
+let threadSize;
+let threadSize_slider;
+let threadSize_display;
 
 /* Allow user to change drawing modes using the dropdown */
 let DRAW_MODE;
 let SYMMETRY;
 
+const HSB_MAX = 100;
+
 /* Variables for the Perlin noise space */
-const gridSize = 10;
+const gridSize = 20;
 const gridCols = canvasWidth / gridSize;
 const gridRows = canvasHeight / gridSize;
-let grid;
-const numParticles = 10;
+const Z_NOISE_SPEED = 0.015;
+let zoff;
+let particles = [];
+let flowField;
 
-function setup(){
-    /* Slider for loops */
+let numParticles;
+let numParticles_slider;
+let numParticles_display;
+
+let flowSpeed;
+let flowSpeed_slider;
+let flowSpeed_display;
+
+
+// FOR DEBUGGING: displaying the framerate
+let frameCounter;
+
+function setup() {
+    // TO-DO: (maybe) make separate function for creating/updating these DOM elements/variables since this looks like repeated code...
+
     loops_slider = select('#loops-slider');
-    //loops_slider.position(10, 0);
+    loops = loops_slider.value();
     loops_display = select('#loops-p');
+
+    threadSize_slider = select('#haystack-size-slider');
+    threadSize = threadSize_slider.value();
+    threadSize_display = select('#haystack-size-p')
+
+    flowSpeed_slider = select('#flow-speed-slider');
+    flowSpeed = flowSpeed_slider.value();
+    flowSpeed_display = select('#flow-speed-p');
+
+    numParticles_slider = select('#num-particles-slider');
+    numParticles = numParticles_slider.value();
+    numParticles_display = select('#num-particles-p');
+
+    select('#flowy-controls').hide();
 
     // initialize DRAW_MODE to the initial selection of the dropdown
     DRAW_MODE = select('#draw-mode-picker').selected();
-    
+
     /* Handle event of dropdown being changed */
     select('#draw-mode-picker').changed(function() {
         DRAW_MODE = select('#draw-mode-picker').selected();
         if (DRAW_MODE === 'haystack-mode') {
+            select('#flowy-controls').hide();
             select('#haystack-controls').style('display', 'inline-block');
-            colorMode(RGB);
         }
         else if (DRAW_MODE === 'flowy-mode') {
             select('#haystack-controls').hide();
-            colorMode(HSB);
+            select('#flowy-controls').style('display', 'inline-block');
         }
     });
 
@@ -62,69 +97,105 @@ function setup(){
         background(0);
     });
 
-    /* Initial p5 setings */
+    // Initial p5 setings
     createCanvas(canvasWidth, canvasHeight);
-    angleMode(DEGREES);
+    angleMode(RADIANS);
     rectMode(CORNER);
     frameRate(60);
     background(0);
+    colorMode(HSB, HSB_MAX, HSB_MAX, HSB_MAX);
 
-    // initialize the 3-D Perlin noise space (defaults to random seed each time browser page is reloaded)
-    grid = new VectorField(gridCols, gridRows);
-    console.log(grid.cols, grid.rows);
-    stroke(255);
-    for (let i = 0; i < gridCols; i++) {
-        for(let j = 0; j < gridRows; j++) {
-            grid.setXY(i, j, i, j);
-        }
+    // Initialize the MovingThread object for "Haystack" mode
+    let c = color(random(HSB_MAX), random(HSB_MAX - HSB_MAX/10, HSB_MAX), HSB_MAX);
+    threadLine = new MovingThread(c, mouseX, mouseY, random(30, 60));
+
+    // Initialize the 3-D Perlin noise space (defaults to random seed each time browser page is reloaded)
+    flowField = new VectorField(gridCols, gridRows);
+    zoff = 0;
+    for (let i = 0; i < numParticles; i++) {
+        particles[i] = new Particle(random(canvasWidth), random(canvasHeight));
     }
-    for (let i = 0; i < grid.cols; i++) {
-        for (let j = 0; j < grid.rows; j++) {
-            let v = grid.getItem(i, j);
-            line(v.x, v.y, v.y + 1, v.x -5);
-        }
-    }
+
+    frameCounter = createP('');
 }
 
 /* Global MovingThread variable and constant(s) */
 var threadLine;
 
-function draw(){
-    loops = loops_slider.value();
-    loops_display.html('Draw Speed: ' + loops_slider.value());
-    
+function draw() {    
     if (DRAW_MODE === 'haystack-mode') {
-        // draw the "thread" stuff
-        for(let i = 0; i < loops; i++){
-            // draw this while mouse is currently pressed down
-            if(mouseIsPressed && inCanvas()){
-                if (threadLine) {
-                    // make threadLine 'crawl' toward the mouse position (so it always follows the cursor)
-                    threadLine.crawlToward(mouseX, mouseY);
-                    
-                    // call the 'sew' (draw) function of threadLine, which is its own drawing function
-                    threadLine.sew();
-                }
+        // update DOM elements
+        loops = loops_slider.value();
+        loops_display.html('Draw Speed: ' + loops);
+        threadSize = threadSize_slider.value();
+        threadSize_display.html('Hay Needle Length: ' + threadSize);
+        threadLine.setMaxLength(threadSize);
+
+        // draw this while mouse is currently pressed down in the canvas, and it was originally clicked in the canvas (which is the case if threadLine.drawing is true)
+        if(mouseIsPressed && mouseInCanvas() && threadLine.drawing){
+            for(let i = 0; i < loops; i++){
+                // make threadLine 'crawl' toward the mouse position (so it always follows the cursor)
+                threadLine.crawlToward(mouseX, mouseY);
+               
+                // call the 'sew' (draw) function of threadLine, which is its own drawing function
+                threadLine.sew();
             }
         }
     }
     else if (DRAW_MODE === 'flowy-mode') {
-        //do Perlin noise flow field stuff around the mouse location...
-        //dump some number of particles (from Particle.js) near the mouse location, and have them follow the flow field!
-        //... something like: particles[i] = new Particle(mouseX, mouseY); (DO THIS IN A SEPARATE FUNCTION WHERE IT LOOPS AND CREATES 'numParticles' particles)
+        // DOM element updates
+        flowSpeed = flowSpeed_slider.value();
+        flowSpeed_display.html('Flow Speed: ' + flowSpeed);
+        numParticles = numParticles_slider.value();
+        numParticles_display.html('# of Particles: ' + numParticles);
+
+        // draw this while mouse us currently pressed down in the canvas, and it was originally clicked in the canvas (which is the case if flowField.drawing is true)
+        if(mouseIsPressed && mouseInCanvas() && flowField.  drawing){
+            flowField.applyNoise(zoff);
+            zoff += Z_NOISE_SPEED;
+            // update and display particles
+            for (let i = 0; i < numParticles; i++) {
+                particles[i].setMaxSpeed(flowSpeed);
+                particles[i].update(flowField);
+                particles[i].show();
+            }
+        }
     }
+
+    // DEBUGGING: display the frameRate each frame
+    frameCounter.html('fps: ' + floor(frameRate()));
 }
+
+const PARTICLE_RADIUS = 30;
 
 /* When mouse is clicked, create a new MovingThread at the mouse position */
 function mousePressed() {
-    if(inCanvas()) {
-        threadLine = new MovingThread(color(23, 232, 158), mouseX, mouseY, random(100, 300));
+    if (mouseInCanvas()) {
+        if (DRAW_MODE === 'haystack-mode') {
+            threadLine.drawing = true;
+            threadLine.x_pos = mouseX;
+            threadLine.y_pos = mouseY;
+        }
+        else if (DRAW_MODE === 'flowy-mode') {
+            flowField.drawing = true;
+            // place the particles close to the mouse position
+            for (let i = 0; i < numParticles; i++) {
+                let px = mouseX + random(-1 * PARTICLE_RADIUS, PARTICLE_RADIUS);
+                let py = mouseY + random(-1 * PARTICLE_RADIUS, PARTICLE_RADIUS);
+                particles[i] = new Particle(px, py);
+            }
+        }
     }
 }
 
 /* When mouse is released, destroy the MovingThread */
 function mouseReleased(){
-    threadLine = null;
+    if (DRAW_MODE === 'haystack-mode') {
+        threadLine.drawing = false;
+    }
+    else if (DRAW_MODE === 'flowy-mode') {
+        flowField.drawing = false;
+    }
 }
 
 /* commenting out for now since it's acting mysterious... (or I just don't fully understand it)
