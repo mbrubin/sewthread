@@ -39,7 +39,6 @@ class VectorField {
                 // DEBUG: draw each vector
                 //this.show(i, j);
                
-
                 yoff += XY_NOISE_CHANGE;
             }
             xoff += XY_NOISE_CHANGE;

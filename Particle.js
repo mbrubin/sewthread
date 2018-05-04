@@ -51,9 +51,9 @@ class Particle {
     show() {
         push();
         colorMode(RGB);
+        // TO-DO: change this stroke color...
         stroke(random(10, 40), random(180,250), random(100, 130), this.ALPHA);
         strokeWeight(1);
-        //point(this.pos.x, this.pos.y);
         line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
         pop();
     }
