@@ -1,16 +1,46 @@
 <html>
   <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/addons/p5.dom.min.js"></script>
-    <script src="sewthread.js"></script>
+    <script src="lib/p5.js"></script>
+    <script src="lib/p5.dom.js"></script>
+    <!-- CURRENTLY UNUSED <script src="lib/p5.sound.js"></script> -->
     <script src="MovingThread.js"></script>
+    <script src="VectorField.js"></script>
+    <script src="sewthread.js"></script>
     <style>
-        *   {
-            padding: 0;
-            margin: 0;
-        }
+      * {
+          padding: 0;
+          margin: 0;
+      }
+      #canvas-controls {
+        padding-bottom: 5px;
+        margin: 3px;
+      }
+      #canvas-controls * {
+        display: inline-block;
+      }
+      #clear-button {
+        border-radius: 25%;
+        background-color: #dd1111;
+        color: white;
+      }
+      #loops-slider {
+        padding-top: 3px;
+      }
     </style>
   </head>
   <body>
+    <div id="canvas-controls">
+        <button id="clear-button">Clear!</button>
+        <select id="draw-mode-picker">
+          <option value="haystack-mode">Haystack</option>
+          <option value="flowy-mode">Flowy Flows</option>
+        </select>
+        <div id="haystack-controls">
+          <input id="loops-slider" type="range" min="1" max="100" value="1"/>
+          <p id="loops-p"></p>
+          <p>Symmetry:</p>
+          <input id="symmetry-checkbox" type="checkbox"/>
+        </div>
+    </div>
   </body>
 </html>

@@ -1,3 +1,5 @@
+/* The class used for 'Haystack' drawing mode*/
+
 class MovingThread{
     //initially draw the thread randomly close to the mouse coordinates
     constructor(col, x_pos, y_pos, len){
@@ -20,7 +22,7 @@ class MovingThread{
         this.CRAWL_SPEED = 10;
     }
 
-    //getters (are these all necessary???)
+    /* these getters are unnecessary, as javascript object properties can natively be accessed with period (e.g., thread.x = ..., thread.y += ...)
     get x(){
         return this.x_pos;
     }
@@ -33,6 +35,7 @@ class MovingThread{
     get color(){
         return this.col;
     }
+    */
     
     //setters (are these all necessary???)
     set_x(newX){
@@ -51,8 +54,6 @@ class MovingThread{
     //the thread drawing function
     sew(){
         //randomize some variables
-        /* USE NOISE HERE somehow to make cool random patterns/movements */
-        //this.angle = (this.angle + random(-1*this.ANGULAR_SPEED, this.ANGULAR_SPEED)) % 360;
         this.angle = (this.angle + (noise(this.angle) * random(-1*this.ANGULAR_SPEED, this.ANGULAR_SPEED))) % 360;
         this.x_pos += noise(this.x_pos) * random(-1*this.MOVEMENT_SPEED, this.MOVEMENT_SPEED);
         this.y_pos += noise(this.y_pos) * random(-1*this.MOVEMENT_SPEED, this.MOVEMENT_SPEED);
@@ -83,25 +84,17 @@ class MovingThread{
 
         pop();
 
-        //TESTING: draw a symmetrical clone...
-        push();
-        translate(displayWidth-this.x_pos, displayHeight-this.y_pos);
-        let new_angle = this.angle + 180;
-        rotate(new_angle);
-        line(0-(cos(new_angle)*(this.len/2)), 0-(sin(new_angle)*(this.len/2)), cos(new_angle)*(this.len/2), sin(new_angle)*(this.len/2));
-        
-        pop();
-
-        /* TO-DO (1): test out using polar coordinates??? */
-        // e.g.
-        // x = r*cos(theta);
-        // y = r*sin(theta);
-
-        /* TO-DO (2): test out 3-D graphics stuff?!?!?!*/
-        // maybe draw the lines in 3-D space, and have a way to rotate the camera around?
-
-        /* TO-DO (3): test out changing the background color dynamically too so it's not just always black */
-        // have it depend on the current color of this object???
+        // draw a symmetrical clone if the SYMMETRY global boolean is true (true if the checkbox is checked)
+        if (SYMMETRY) {
+            push();
+            
+            translate(canvasWidth-this.x_pos, canvasHeight-this.y_pos);
+            let new_angle = this.angle + 180;
+            rotate(new_angle);
+            line(0-(cos(new_angle)*(this.len/2)), 0-(sin(new_angle)*(this.len/2)), cos(new_angle)*(this.len/2), sin(new_angle)*(this.len/2));
+            
+            pop();
+        }
     }
 
     //used for making the thread "crawl" towards the target coordinates (currently will be the mouse position)
